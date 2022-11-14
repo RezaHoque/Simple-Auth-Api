@@ -3,23 +3,20 @@
 #Depending on the operating system of the host machines(s) that will build or run the containers, the image specified in the FROM statement may need to be changed.
 #For more information, please see https://aka.ms/containercompat
 
-FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
-WORKDIR /app
-EXPOSE 80
-EXPOSE 443
-
+#Build Stage
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
-COPY ["Simple-Auth-Api.csproj", "."]
-RUN dotnet restore "./Simple-Auth-Api.csproj"
 COPY . .
-WORKDIR "/src/."
-RUN dotnet build "Simple-Auth-Api.csproj" -c Release -o /app/build
+RUN dotnet restore "./Simple-Auth-Api.csproj" --disable-parallel
+RUN dotnet publish "./Simple-Auth-Api.csproj" -c release -o /app --no-restore
 
-FROM build AS publish
-RUN dotnet publish "Simple-Auth-Api.csproj" -c Release -o /app/publish /p:UseAppHost=false
-
-FROM base AS final
+#Serve Stage
+FROM mcr.microsoft.com/dotnet/aspnet:6.0
 WORKDIR /app
-COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "Simple-Auth-Api.dll"]
+COPY --from=build /app ./
+
+EXPOSE 80
+EXPOSE 443
+ENTRYPOINT ["dotnet","Simple-Auth-Api.dll"]
+
+ 

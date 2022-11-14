@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Simple_Auth_Api.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     [Authorize]
     public class WeatherForecastController : ControllerBase
     {
